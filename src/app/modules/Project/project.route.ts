@@ -9,19 +9,23 @@ const router = Router();
 
 router.post(
   '/create-project',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.user),
   validateRequest(ProjectValidationSchemas.projectValidationSchemaforCreate),
   ProjectController.createProject,
 );
 
 router.patch(
   '/:id',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.user),
   validateRequest(ProjectValidationSchemas.projectValidationSchemaforUpdate),
   ProjectController.updateProject,
 );
 
-router.delete('/:id', auth(USER_ROLE.admin), ProjectController.deleteProject);
+router.delete(
+  '/:id',
+  auth(USER_ROLE.admin, USER_ROLE.user),
+  ProjectController.deleteProject,
+);
 
 router.get('/:id', ProjectController.getSingleProject);
 

@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 export type TProject = {
   title: string;
@@ -7,6 +7,7 @@ export type TProject = {
   liveLink: string;
   githubLink: string;
   technologies: string[];
+  user: Types.ObjectId;
 };
 
 export interface ProjectModel extends Model<TProject> {

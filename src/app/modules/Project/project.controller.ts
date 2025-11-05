@@ -4,7 +4,12 @@ import sendResponse from '../../utils/sendResponse';
 import { ProjectService } from './project.service';
 
 const createProject = catchAsync(async (req, res) => {
-  const result = await ProjectService.createProjectIntoDB(req.body);
+  const { userEmail } = req.user;
+  const projectData = req.body;
+  const result = await ProjectService.createProjectIntoDB(
+    userEmail,
+    projectData,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -38,8 +43,13 @@ const getSingleProject = catchAsync(async (req, res) => {
 });
 
 const updateProject = catchAsync(async (req, res) => {
+  const { userEmail } = req.user;
   const { id } = req.params;
-  const result = await ProjectService.updateProjectDataIntoDB(id, req.body);
+  const result = await ProjectService.updateProjectDataIntoDB(
+    userEmail,
+    id,
+    req.body,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -51,7 +61,8 @@ const updateProject = catchAsync(async (req, res) => {
 
 const deleteProject = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await ProjectService.deleteProjectFromDB(id);
+  const { userEmail } = req.user;
+  const result = await ProjectService.deleteProjectFromDB(userEmail, id);
 
   sendResponse(res, {
     statusCode: status.OK,

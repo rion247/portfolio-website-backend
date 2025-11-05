@@ -2,8 +2,22 @@ import status from 'http-status';
 import AppError from '../../errors/AppError';
 import { TProject } from './project.interface';
 import { Project } from './project.model';
+import { User } from '../User/user.model';
 
-const createProjectIntoDB = async (payload: TProject) => {
+const createProjectIntoDB = async (email: string, payload: TProject) => {
+  const userData = await User.findOne({ email });
+
+  if (!userData) {
+    throw new AppError(status.NOT_FOUND, 'Sorry! This user is not found!!!');
+  }
+
+  if (userData?.status === 'deactive') {
+    throw new AppError(
+      status.BAD_REQUEST,
+      'Sorry! This user is already deactivated!!!',
+    );
+  }
+
   const projectAlreadyExist = await Project.findOne({
     title: payload?.title,
     description: payload?.description,
@@ -13,7 +27,9 @@ const createProjectIntoDB = async (payload: TProject) => {
     throw new AppError(status.BAD_REQUEST, 'Project already exist!!!');
   }
 
-  const result = await Project.create(payload);
+  const modifiedData = { ...payload, user: userData?._id };
+
+  const result = await Project.create(modifiedData);
 
   if (!result) {
     throw new AppError(
@@ -25,16 +41,17 @@ const createProjectIntoDB = async (payload: TProject) => {
 };
 
 const getAllProjectFromDB = async () => {
-  const result = await Project.find();
+  const result = await Project.find().populate('user');
   return result;
 };
 
 const getSingleProjectFromDB = async (id: string) => {
-  const result = await Project.findById(id);
+  const result = await Project.findById(id).populate('user');
   return result;
 };
 
 const updateProjectDataIntoDB = async (
+  userEmail: string,
   id: string,
   payload: Partial<TProject>,
 ) => {
@@ -44,6 +61,28 @@ const updateProjectDataIntoDB = async (
 
   if (!projectData) {
     throw new AppError(status.BAD_REQUEST, 'Project not found!!!');
+  }
+
+  const userData = await User.findById(projectData?.user);
+
+  if (!userData) {
+    throw new AppError(status.NOT_FOUND, 'Sorry! This user is not found!!!');
+  }
+
+  if (userData?.status === 'deactive') {
+    throw new AppError(
+      status.BAD_REQUEST,
+      'Sorry! This user is already deactivated!!!',
+    );
+  }
+
+  const authorEmail = userData?.email;
+
+  if (authorEmail !== userEmail) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      'Sorry!!! You are not authorized!!!',
+    );
   }
 
   const modifiedData: Record<string, unknown> = { ...remainingData };
@@ -70,9 +109,33 @@ const updateProjectDataIntoDB = async (
   return result;
 };
 
-const deleteProjectFromDB = async (id: string) => {
-  if (!(await Project.findById(id))) {
+const deleteProjectFromDB = async (userEmail: string, id: string) => {
+  const projectData = await Project.findById(id);
+
+  if (!projectData) {
     throw new AppError(status.BAD_REQUEST, 'Project not found!!!');
+  }
+
+  const userData = await User.findById(projectData?.user);
+
+  if (!userData) {
+    throw new AppError(status.NOT_FOUND, 'Sorry! This user is not found!!!');
+  }
+
+  if (userData?.status === 'deactive') {
+    throw new AppError(
+      status.BAD_REQUEST,
+      'Sorry! This user is already deactivated!!!',
+    );
+  }
+
+  const authorEmail = userData?.email;
+
+  if (authorEmail !== userEmail) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      'Sorry!!! You are not authorized!!!',
+    );
   }
 
   const result = await Project.findByIdAndDelete(id);

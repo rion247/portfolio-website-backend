@@ -9,19 +9,23 @@ const router = Router();
 
 router.post(
   '/create-blog',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.user),
   validateRequest(BlogValidationSchemas.blogValidationSchemaforCreate),
   BlogController.createBlog,
 );
 
 router.patch(
   '/:id',
-  auth(USER_ROLE.admin),
+  auth(USER_ROLE.admin, USER_ROLE.user),
   validateRequest(BlogValidationSchemas.blogValidationSchemaforUpdate),
   BlogController.updateBlog,
 );
 
-router.delete('/:id', auth(USER_ROLE.admin), BlogController.deleteBlog);
+router.delete(
+  '/:id',
+  auth(USER_ROLE.admin, USER_ROLE.user),
+  BlogController.deleteBlog,
+);
 
 router.get('/:id', BlogController.getSingleBlog);
 

@@ -4,7 +4,9 @@ import sendResponse from '../../utils/sendResponse';
 import { BlogService } from './blog.service';
 
 const createBlog = catchAsync(async (req, res) => {
-  const result = await BlogService.createBlogIntoDB(req.body);
+  const { userEmail } = req.user;
+
+  const result = await BlogService.createBlogIntoDB(userEmail, req.body);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -39,7 +41,12 @@ const getSingleBlog = catchAsync(async (req, res) => {
 
 const updateBlog = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await BlogService.updateBlogDataIntoDB(id, req.body);
+  const { userEmail } = req.user;
+  const result = await BlogService.updateBlogDataIntoDB(
+    userEmail,
+    id,
+    req.body,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -51,7 +58,8 @@ const updateBlog = catchAsync(async (req, res) => {
 
 const deleteBlog = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await BlogService.deleteBlogFromDB(id);
+  const { userEmail } = req.user;
+  const result = await BlogService.deleteBlogFromDB(userEmail, id);
 
   sendResponse(res, {
     statusCode: status.OK,

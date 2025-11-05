@@ -28,6 +28,10 @@ const projectSchema = new Schema<TProject, ProjectModel>(
       type: [String],
       required: [true, 'Project Technologies is required!!!'],
     },
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'User Information is required!!!'],
+    },
   },
   { timestamps: true },
 );
